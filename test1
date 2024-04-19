@@ -1,0 +1,7 @@
+# Set screen timeout to 1 hour (3600 seconds)
+$regPath = "HKCU:\ControlPanel\Mouse"
+$keyName = "InitialTimeout"
+$newValue = New-Object -ComObject WMiclass:"ROOT\CIMV2:Win32_RegistrySetting" -ArgumentList $regPath,$keyName,"REG_DWORD","0x00FFE000"
+Set-WMIInstance -Class Win32_OperatingSystem | Select-Object -ExpandProperty RegistryPath | Invoke-Command -ScriptBlock {Set-ItemProperty -Path $_ -Name "$($args[0])" -Force -Type DWord -Value $($args[1]))} -ArgumentList $newValue.PSComputerName,$newValue.Value
+Start-Sleep -Seconds 5
+Get-WmiObject -Class Win32_PowerSettings | Where-Object {$_.ACSettingIndex -eq 0} | Foreach-Object {$_.SetActive(1)}
